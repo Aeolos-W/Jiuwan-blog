@@ -61,6 +61,14 @@ function processContent(content: string): string {
   if (!content) return '';
 
   let processed = content;
+  const equationNumbers: number[] = [];
+
+  // --- Phase 0: Collect equation numbers ---
+  const eqRegex = /\$\$([\s\S]*?)\$\$(?:\s*\((\d+)\))/g;
+  let m;
+  while ((m = eqRegex.exec(content)) !== null) {
+    equationNumbers.push(parseInt(m[2], 10));
+  }
 
   // --- Phase 1: Extract and protect special content ---
   const protectedBlocks: { placeholder: string; html: string }[] = [];
@@ -74,10 +82,11 @@ function processContent(content: string): string {
 
   // Extract display math with optional number: $$...$$ (n)
   processed = processed.replace(/\$\$([\s\S]*?)\$\$(?:\s*\((\d+)\))?/g, (match, tex, num) => {
-    const tag = num
-      ? `<span class="math-display-num" data-tex="${escapeAttr(tex)}"></span><span class="math-number">(${num})</span>`
-      : `<span class="math-display" data-tex="${escapeAttr(tex)}"></span>`;
-    return protect(tag);
+    if (num) {
+      const tag = `<span class="math-display-num" id="eq-${num}" data-tex="${escapeAttr(tex)}"></span><span class="math-number"><a href="#eq-${num}">(${num})</a></span>`;
+      return protect(tag);
+    }
+    return protect(`<span class="math-display" data-tex="${escapeAttr(tex)}"></span>`);
   });
 
   // Extract inline math \( ... \)
@@ -102,25 +111,25 @@ function processContent(content: string): string {
     .replace(/>/g, '&gt;');
 
   // --- Phase 3: Process blockquotes with special types ---
-  // Handle multi-line blockquotes grouped by > prefix
+  // Support custom names like: 历史溯源, 定理, Theorem, Question, etc.
   const lines = processed.split('\n');
   const result: string[] = [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    // Check if line starts with > (after HTML escaping it's &gt;)
     const bqMatch = line.match(/^&gt;\s?(.*)$/);
     if (bqMatch) {
       const inner = bqMatch[1];
-      // Check for special blockquote types: Theorem, Question, Proof, Remark, etc.
-      const specialMatch = inner.match(/^(Theorem|Question|Proof|Remark|Lemma|Proposition|Corollary|Definition|Example|Exercise)\s*(\d*)\s*(?:\(([^)]+)\))?\s*:\s*(.*)$/);
+      // Match: Name 1 (Label): text  or  Name: text
+      // Supports Chinese characters, letters, digits in name
+      const specialMatch = inner.match(/^([\w\u4e00-\u9fa5]+)\s*(\d*)\s*(?:\(([^)]+)\))?\s*:\s*(.*)$/);
       if (specialMatch) {
-        const type = specialMatch[1].toLowerCase();
+        const name = specialMatch[1];
         const num = specialMatch[2];
         const label = specialMatch[3];
         const text = specialMatch[4];
-        const titleHtml = `<span class="bq-title">${specialMatch[1]}${num ? ` ${num}` : ''}${label ? ` (${label})` : ''}</span>`;
-        // Collect continuation lines
+        const cssClass = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        const titleHtml = `<span class="bq-title">${name}${num ? ` ${num}` : ''}${label ? ` (${label})` : ''}</span>`;
         const bodyLines: string[] = [text];
         while (i + 1 < lines.length && lines[i + 1].match(/^&gt;\s?(.*)$/)) {
           i++;
@@ -128,9 +137,8 @@ function processContent(content: string): string {
           if (contMatch) bodyLines.push(contMatch[1]);
         }
         const body = bodyLines.join('\n');
-        result.push(protect(`<div class="bq-box bq-${type}">${titleHtml}<div class="bq-body">${body}</div></div>`));
+        result.push(protect(`<div class="bq-box bq-${cssClass}">${titleHtml}<div class="bq-body">${body}</div></div>`));
       } else {
-        // Regular blockquote
         const bodyLines: string[] = [inner];
         while (i + 1 < lines.length && lines[i + 1].match(/^&gt;\s?(.*)$/)) {
           i++;
@@ -235,7 +243,21 @@ function processContent(content: string): string {
 
   processed = output.join('\n');
 
-  // --- Phase 6: Restore protected blocks ---
+  // --- Phase 6: Equation cross-references ---
+  // Turn standalone (n) in paragraphs into links to #eq-n
+  if (equationNumbers.length > 0) {
+    const eqPattern = new RegExp(
+      '\\((' + equationNumbers.join('|') + ')\\)',
+      'g'
+    );
+    processed = processed.replace(eqPattern, (match, num) => {
+      // Don't replace if it's already inside a link or math
+      if (match.includes('href=') || match.includes('data-tex=')) return match;
+      return `<a href="#eq-${num}" class="eq-ref">(${num})</a>`;
+    });
+  }
+
+  // --- Phase 7: Restore protected blocks ---
   protectedBlocks.forEach(({ placeholder, html }) => {
     processed = processed.replace(placeholder, html);
   });

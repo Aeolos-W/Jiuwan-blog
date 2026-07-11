@@ -215,6 +215,16 @@ h1, h2, h3, h4, h5, h6 {
   color: #006a80;
 }
 
+/* Equation cross-reference links */
+.eq-ref {
+  color: #006a80;
+  text-decoration: none;
+}
+
+.eq-ref:hover {
+  text-decoration: underline;
+}
+
 /* Math formula with number */
 .math-formula-row {
   display: flex;
