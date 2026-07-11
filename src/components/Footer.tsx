@@ -21,7 +21,7 @@ export default function Footer() {
           <p className="text-tao-light-gray" style={{ fontSize: '11px' }}>
             Blog powered by Next.js + Supabase. Theme inspired by{' '}
             <Link href="https://terrytao.wordpress.com/" className="text-tao-teal hover:underline" target="_blank" rel="noopener noreferrer">
-              What's new
+              九畹的博客
             </Link>.
           </p>
         </div>

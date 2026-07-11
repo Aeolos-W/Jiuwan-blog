@@ -17,7 +17,7 @@ interface PostPageProps {
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
   const post = await getPostBySlug(params.slug);
   return {
-    title: post ? `${post.title} | What's new` : 'Post not found',
+    title: post ? `${post.title} | 九畹的博客` : 'Post not found',
   };
 }
 

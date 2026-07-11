@@ -6,8 +6,8 @@ import Sidebar from '@/components/Sidebar';
 import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
-  title: "What's new | Updates on my research and expository papers",
-  description: "Updates on my research and expository papers, discussion of open problems, and other maths-related topics.",
+  title: "九畹的博客 | Updates on my research and expository papers",
+  description: "辨彰学术，考镜源流，岐轩故纸堆的小门徒.",
 };
 
 export default function RootLayout({

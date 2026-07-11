@@ -1,4 +1,4 @@
-# What's new - 陶哲轩风格博客
+# 九畹的博客
 
 一个复刻陶哲轩 WordPress 博客风格的现代博客系统，使用 Next.js + Supabase 构建。
 

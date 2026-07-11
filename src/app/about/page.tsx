@@ -46,7 +46,7 @@ export default function AboutPage() {
         <p>
           The design and layout of this blog are inspired by the original{' '}
           <a href="https://terrytao.wordpress.com/" className="text-tao-teal hover:underline" target="_blank" rel="noopener noreferrer">
-            What's new
+            九畹的博客
           </a>{' '}
           WordPress blog.
         </p>

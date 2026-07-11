@@ -16,11 +16,11 @@ export default function Header() {
       <div className="mt-4">
         <h1 className="text-h1 font-heading">
           <Link href="/" className="text-tao-teal hover:underline">
-            What's new
+            九畹的博客
           </Link>
         </h1>
         <p className="text-tao-gray italic mt-1" style={{ fontSize: '12.16px' }}>
-          Updates on my research and expository papers, discussion of open problems, and other maths-related topics. By Terence Tao
+          辨彰学术，考镜源流，岐轩故纸堆的小门徒
         </p>
       </div>
     </header>

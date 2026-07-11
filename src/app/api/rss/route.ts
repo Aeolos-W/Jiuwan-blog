@@ -6,8 +6,8 @@ export async function GET() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
   const feed = new RSS({
-    title: "What's new",
-    description: 'Updates on my research and expository papers, discussion of open problems, and other maths-related topics.',
+    title: "九畹的博客",
+    description: '辨彰学术，考镜源流，岐轩故纸堆的小门徒.',
     feed_url: `${siteUrl}/feed/`,
     site_url: siteUrl,
     language: 'en',

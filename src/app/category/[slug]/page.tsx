@@ -9,7 +9,7 @@ interface CategoryPageProps {
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const category = await getCategoryBySlug(params.slug);
   return {
-    title: category ? `${category.name} | What's new` : 'Category not found',
+    title: category ? `${category.name} | 九畹的博客` : 'Category not found',
   };
 }
 
