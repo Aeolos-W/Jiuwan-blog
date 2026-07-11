@@ -183,11 +183,14 @@ function processContent(content: string): string {
     return protect(`<sup class="fn-ref"><a href="#fn-${id}" id="fnref-${id}">${id}</a></sup>`);
   });
 
-  // Headings
-  processed = processed.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>');
-  processed = processed.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
-  processed = processed.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
-  processed = processed.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>');
+  // Headings with auto-generated ids
+  processed = processed.replace(/^####\s+(.+)$/gm, (match, title) => `<h4 id="${slugify(title)}">${title}</h4>`);
+  processed = processed.replace(/^###\s+(.+)$/gm, (match, title) => `<h3 id="${slugify(title)}">${title}</h3>`);
+  processed = processed.replace(/^##\s+(.+)$/gm, (match, title) => `<h2 id="${slugify(title)}">${title}</h2>`);
+  processed = processed.replace(/^#\s+(.+)$/gm, (match, title) => `<h1 id="${slugify(title)}">${title}</h1>`);
+
+  // Custom anchor definitions: {#my-anchor}
+  processed = processed.replace(/\{#([\w\u4e00-\u9fa5\-]+)\}/g, '<span id="$1"></span>');
 
   // Images
   processed = processed.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;height:auto;">');
@@ -321,6 +324,14 @@ function processBoxBody(body: string): string {
     html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
     return `<p>${html}</p>`;
   }).join('\n');
+}
+
+/** Generate a URL-friendly id from heading text */
+function slugify(text: string): string {
+  return text.trim()
+    .toLowerCase()
+    .replace(/[^\w\u4e00-\u9fa5\s-]/g, '')
+    .replace(/\s+/g, '-');
 }
 
 function escapeHtml(str: string): string {
