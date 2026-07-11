@@ -12,7 +12,7 @@ INSERT INTO categories (id, name, slug, description, sort_order) VALUES
 
 -- 插入文章
 INSERT INTO posts (id, title, slug, content, excerpt, published_at, author_id, category_id, tags, status, comment_count) VALUES
-('p1b2c3d4-e5f6-4890-abcd-ef1234567890',
+('f1b2c3d4-e5f6-4890-abcd-ef1234567890',
 'A digestion of unit distance constructions',
 'a-digestion-of-unit-distance-constructions',
 E'Suppose that one has a set \(P\) of \(n\) points in the plane, which we will think of as the complex plane \(\mathbf{C}\). Let \(d_1(P)\) denote the number of unit distances determined by these points, i.e., pairs of points \(p, q \in P\) whose displacement \(w = q-p\) obeys the equation
@@ -34,7 +34,7 @@ ARRAY['AI', 'Erdos distance problem', 'number field'],
 );
 
 INSERT INTO posts (id, title, slug, content, excerpt, published_at, author_id, category_id, tags, status, comment_count) VALUES
-('p1b2c3d4-e5f6-4890-abcd-ef1234567891',
+('f1b2c3d4-e5f6-4890-abcd-ef1234567891',
 'Third SAIR competition: Inverse Galois challenge',
 'third-sair-competition-inverse-galois-challenge',
 E'The third annual Summer Apprenticeship in Research (SAIR) competition has been announced. This year''s challenge focuses on the **Inverse Galois Problem**.
@@ -52,7 +52,7 @@ ARRAY['Galois theory', 'inverse Galois problem', 'number theory'],
 );
 
 INSERT INTO posts (id, title, slug, content, excerpt, published_at, author_id, category_id, tags, status, comment_count) VALUES
-('p1b2c3d4-e5f6-4890-abcd-ef1234567892',
+('f1b2c3d4-e5f6-4890-abcd-ef1234567892',
 'Career advice: The importance of flexibility',
 'career-advice-flexibility',
 E'In my experience, one of the most important qualities for a successful mathematical career is **flexibility**. The ability to pivot between fields, to learn new tools, and to adapt to changing circumstances is invaluable.
@@ -75,7 +75,7 @@ ARRAY['career advice', 'research'],
 );
 
 INSERT INTO posts (id, title, slug, content, excerpt, published_at, author_id, category_id, tags, status, comment_count) VALUES
-('p1b2c3d4-e5f6-4890-abcd-ef1234567893',
+('f1b2c3d4-e5f6-4890-abcd-ef1234567893',
 'On writing: Structure and organization',
 'on-writing-structure',
 E'A well-structured mathematical paper is like a well-designed building: each component supports the others, and the overall effect is greater than the sum of its parts.
@@ -104,9 +104,9 @@ ARRAY['writing', 'mathematics'],
 
 -- 插入评论
 INSERT INTO comments (post_id, author_name, author_email, content, created_at, is_approved) VALUES
-('p1b2c3d4-e5f6-4890-abcd-ef1234567890', 'Alice Math', 'alice@example.com', 'Great post! The connection to the complex plane is very elegant.', '2026-07-03 12:00:00+00', true),
-('p1b2c3d4-e5f6-4890-abcd-ef1234567890', 'Bob Number', 'bob@example.com', 'I wonder if similar bounds hold for other norms.', '2026-07-03 14:30:00+00', true),
-('p1b2c3d4-e5f6-4890-abcd-ef1234567892', 'Carol Grad', 'carol@example.com', 'This is exactly what I needed to hear as I finish my PhD.', '2026-05-21 08:00:00+00', true);
+('f1b2c3d4-e5f6-4890-abcd-ef1234567890', 'Alice Math', 'alice@example.com', 'Great post! The connection to the complex plane is very elegant.', '2026-07-03 12:00:00+00', true),
+('f1b2c3d4-e5f6-4890-abcd-ef1234567890', 'Bob Number', 'bob@example.com', 'I wonder if similar bounds hold for other norms.', '2026-07-03 14:30:00+00', true),
+('f1b2c3d4-e5f6-4890-abcd-ef1234567892', 'Carol Grad', 'carol@example.com', 'This is exactly what I needed to hear as I finish my PhD.', '2026-05-21 08:00:00+00', true);
 
 -- 插入标签
 INSERT INTO tags (name, slug) VALUES
@@ -123,12 +123,12 @@ INSERT INTO tags (name, slug) VALUES
 
 -- 关联文章标签
 INSERT INTO post_tags (post_id, tag_id) VALUES
-('p1b2c3d4-e5f6-4890-abcd-ef1234567890', (SELECT id FROM tags WHERE slug = 'ai')),
-('p1b2c3d4-e5f6-4890-abcd-ef1234567890', (SELECT id FROM tags WHERE slug = 'erdos-distance-problem')),
-('p1b2c3d4-e5f6-4890-abcd-ef1234567890', (SELECT id FROM tags WHERE slug = 'number-field')),
-('p1b2c3d4-e5f6-4890-abcd-ef1234567891', (SELECT id FROM tags WHERE slug = 'galois-theory')),
-('p1b2c3d4-e5f6-4890-abcd-ef1234567891', (SELECT id FROM tags WHERE slug = 'inverse-galois-problem')),
-('p1b2c3d4-e5f6-4890-abcd-ef1234567892', (SELECT id FROM tags WHERE slug = 'career-advice')),
-('p1b2c3d4-e5f6-4890-abcd-ef1234567892', (SELECT id FROM tags WHERE slug = 'research')),
-('p1b2c3d4-e5f6-4890-abcd-ef1234567893', (SELECT id FROM tags WHERE slug = 'writing')),
-('p1b2c3d4-e5f6-4890-abcd-ef1234567893', (SELECT id FROM tags WHERE slug = 'mathematics'));
+('f1b2c3d4-e5f6-4890-abcd-ef1234567890', (SELECT id FROM tags WHERE slug = 'ai')),
+('f1b2c3d4-e5f6-4890-abcd-ef1234567890', (SELECT id FROM tags WHERE slug = 'erdos-distance-problem')),
+('f1b2c3d4-e5f6-4890-abcd-ef1234567890', (SELECT id FROM tags WHERE slug = 'number-field')),
+('f1b2c3d4-e5f6-4890-abcd-ef1234567891', (SELECT id FROM tags WHERE slug = 'galois-theory')),
+('f1b2c3d4-e5f6-4890-abcd-ef1234567891', (SELECT id FROM tags WHERE slug = 'inverse-galois-problem')),
+('f1b2c3d4-e5f6-4890-abcd-ef1234567892', (SELECT id FROM tags WHERE slug = 'career-advice')),
+('f1b2c3d4-e5f6-4890-abcd-ef1234567892', (SELECT id FROM tags WHERE slug = 'research')),
+('f1b2c3d4-e5f6-4890-abcd-ef1234567893', (SELECT id FROM tags WHERE slug = 'writing')),
+('f1b2c3d4-e5f6-4890-abcd-ef1234567893', (SELECT id FROM tags WHERE slug = 'mathematics'));
