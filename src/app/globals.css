@@ -127,6 +127,114 @@ h1, h2, h3, h4, h5, h6 {
   margin: 1.5em 0;
 }
 
+/* Special blockquote boxes (Theorem, Question, Proof, etc.) */
+.bq-box {
+  margin: 1em 0;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  background: #f9f9f9;
+}
+
+.bq-box .bq-title {
+  display: block;
+  font-weight: bold;
+  font-size: 12.16px;
+  margin-bottom: 8px;
+  font-style: italic;
+  font-family: "Times New Roman", Times, serif;
+}
+
+.bq-box .bq-body {
+  font-size: 12.16px;
+  line-height: 1.6;
+}
+
+.bq-box .bq-body p {
+  margin-bottom: 0.5em;
+}
+
+.bq-box .bq-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* Theorem box variant */
+.bq-theorem {
+  background: #f5f5f5;
+  border-left: 3px solid #999;
+}
+
+/* Question box variant */
+.bq-question {
+  background: #f8f8f8;
+  border-left: 3px solid #ccc;
+}
+
+/* Proof box variant */
+.bq-proof {
+  background: #fafafa;
+  border-left: 3px solid #ddd;
+}
+
+/* Definition box variant */
+.bq-definition {
+  background: #f0f7fa;
+  border-left: 3px solid #006a80;
+}
+
+/* Footnotes */
+.fn-ref a {
+  color: #006a80;
+  font-size: 10px;
+  vertical-align: super;
+  text-decoration: none;
+}
+
+.fn-ref a:hover {
+  text-decoration: underline;
+}
+
+.footnotes {
+  margin-top: 2em;
+  padding-top: 1em;
+  border-top: 1px solid #ddd;
+}
+
+.footnotes h4 {
+  font-size: 14px;
+  margin-bottom: 0.5em;
+}
+
+.footnote {
+  font-size: 11px;
+  color: #555;
+  margin-bottom: 0.5em;
+  line-height: 1.5;
+}
+
+.footnote a {
+  color: #006a80;
+}
+
+/* Math formula with number */
+.math-formula-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 1em 0;
+}
+
+.math-formula-row .math-display-num {
+  flex: 1;
+  overflow-x: auto;
+}
+
+.math-formula-row .math-number {
+  color: #666;
+  font-size: 12px;
+  margin-left: 1em;
+  flex-shrink: 0;
+}
+
 .katex-display {
   margin: 1em 0;
   overflow-x: auto;

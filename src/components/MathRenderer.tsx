@@ -62,128 +62,192 @@ function processContent(content: string): string {
 
   let processed = content;
 
-  // Protect math expressions from markdown processing
-  const mathBlocks: { placeholder: string; html: string }[] = [];
+  // --- Phase 1: Extract and protect special content ---
+  const protectedBlocks: { placeholder: string; html: string }[] = [];
+  let blockIndex = 0;
 
-  // Extract display math $$...$$
-  processed = processed.replace(/\$\$([\s\S]*?)\$\$/g, (match, tex) => {
-    const placeholder = `__MATH_BLOCK_${mathBlocks.length}__`;
-    mathBlocks.push({ placeholder, html: `<span class="math-display" data-tex="${escapeAttr(tex)}"></span>` });
+  function protect(html: string): string {
+    const placeholder = `__PROTECTED_${blockIndex++}__`;
+    protectedBlocks.push({ placeholder, html });
     return placeholder;
+  }
+
+  // Extract display math with optional number: $$...$$ (n)
+  processed = processed.replace(/\$\$([\s\S]*?)\$\$(?:\s*\((\d+)\))?/g, (match, tex, num) => {
+    const tag = num
+      ? `<span class="math-display-num" data-tex="${escapeAttr(tex)}"></span><span class="math-number">(${num})</span>`
+      : `<span class="math-display" data-tex="${escapeAttr(tex)}"></span>`;
+    return protect(tag);
   });
 
   // Extract inline math \( ... \)
   processed = processed.replace(/\\\(([\s\S]*?)\\\)/g, (match, tex) => {
-    const placeholder = `__MATH_INLINE_${mathBlocks.length}__`;
-    mathBlocks.push({ placeholder, html: `<span class="math-inline" data-tex="${escapeAttr(tex)}"></span>` });
-    return placeholder;
+    return protect(`<span class="math-inline" data-tex="${escapeAttr(tex)}"></span>`);
   });
 
   // Extract inline math $...$ (but not $$)
   processed = processed.replace(/(?<!\$)\$(?!\$)([\s\S]*?)(?<!\$)\$(?!\$)/g, (match, tex) => {
-    const placeholder = `__MATH_INLINE_${mathBlocks.length}__`;
-    mathBlocks.push({ placeholder, html: `<span class="math-inline" data-tex="${escapeAttr(tex)}"></span>` });
-    return placeholder;
+    return protect(`<span class="math-inline" data-tex="${escapeAttr(tex)}"></span>`);
   });
 
-  // Escape HTML entities
+  // Extract code blocks
+  processed = processed.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
+    return protect(`<pre><code class="language-${lang || 'text'}">${escapeHtml(code)}</code></pre>`);
+  });
+
+  // --- Phase 2: Escape HTML ---
   processed = processed
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 
-  // Restore math placeholders before markdown processing
-  mathBlocks.forEach(({ placeholder, html }) => {
-    processed = processed.replace(placeholder, html);
+  // --- Phase 3: Process blockquotes with special types ---
+  // Handle multi-line blockquotes grouped by > prefix
+  const lines = processed.split('\n');
+  const result: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    // Check if line starts with > (after HTML escaping it's &gt;)
+    const bqMatch = line.match(/^&gt;\s?(.*)$/);
+    if (bqMatch) {
+      const inner = bqMatch[1];
+      // Check for special blockquote types: Theorem, Question, Proof, Remark, etc.
+      const specialMatch = inner.match(/^(Theorem|Question|Proof|Remark|Lemma|Proposition|Corollary|Definition|Example|Exercise)\s*(\d*)\s*(?:\(([^)]+)\))?\s*:\s*(.*)$/);
+      if (specialMatch) {
+        const type = specialMatch[1].toLowerCase();
+        const num = specialMatch[2];
+        const label = specialMatch[3];
+        const text = specialMatch[4];
+        const titleHtml = `<span class="bq-title">${specialMatch[1]}${num ? ` ${num}` : ''}${label ? ` (${label})` : ''}</span>`;
+        // Collect continuation lines
+        const bodyLines: string[] = [text];
+        while (i + 1 < lines.length && lines[i + 1].match(/^&gt;\s?(.*)$/)) {
+          i++;
+          const contMatch = lines[i].match(/^&gt;\s?(.*)$/);
+          if (contMatch) bodyLines.push(contMatch[1]);
+        }
+        const body = bodyLines.join('\n');
+        result.push(protect(`<div class="bq-box bq-${type}">${titleHtml}<div class="bq-body">${body}</div></div>`));
+      } else {
+        // Regular blockquote
+        const bodyLines: string[] = [inner];
+        while (i + 1 < lines.length && lines[i + 1].match(/^&gt;\s?(.*)$/)) {
+          i++;
+          const contMatch = lines[i].match(/^&gt;\s?(.*)$/);
+          if (contMatch) bodyLines.push(contMatch[1]);
+        }
+        const body = bodyLines.join('\n');
+        result.push(protect(`<blockquote>${body}</blockquote>`));
+      }
+      continue;
+    }
+    result.push(line);
+  }
+
+  processed = result.join('\n');
+
+  // --- Phase 4: Process remaining markdown ---
+
+  // Footnotes [^1] and [^1]: definition
+  const footnotes: { id: string; text: string }[] = [];
+  processed = processed.replace(/^\[(\^\d+)\]:\s*(.+)$/gm, (match, id, text) => {
+    footnotes.push({ id, text });
+    return protect(`<div class="footnote" id="fn-${id}"><sup>${id}</sup> ${text} <a href="#fnref-${id}">↩</a></div>`);
+  });
+  processed = processed.replace(/\[(\^\d+)\]/g, (match, id) => {
+    return protect(`<sup class="fn-ref"><a href="#fn-${id}" id="fnref-${id}">${id}</a></sup>`);
   });
 
-  // Process code blocks ```lang\ncode\n```
-  processed = processed.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
-    return `<pre><code class="language-${lang || 'text'}">${escapeHtml(code)}</code></pre>`;
-  });
-
-  // Process inline code `code`
-  processed = processed.replace(/`([^`]+)`/g, '<code>$1</code>');
-
-  // Process headings # ## ###
+  // Headings
   processed = processed.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>');
   processed = processed.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
   processed = processed.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
   processed = processed.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>');
 
-  // Process blockquote > text
-  processed = processed.replace(/^&gt;\s*(.+)$/gm, '<blockquote>$1</blockquote>');
-
-  // Process images ![alt](url)
+  // Images
   processed = processed.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;height:auto;">');
 
-  // Process links [text](url)
+  // Links
   processed = processed.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
 
-  // Process bold **text**
+  // Bold
   processed = processed.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 
-  // Process italic *text* (but not **)
+  // Italic
   processed = processed.replace(/(?<!\*)\*(?!\*)([^*]+)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
 
-  // Process horizontal rule ---
+  // Inline code
+  processed = processed.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // Horizontal rule
   processed = processed.replace(/^---+$/gm, '<hr>');
 
-  // Process paragraphs and lists
-  const lines = processed.split('\n');
-  const result: string[] = [];
+  // --- Phase 5: Paragraphs and lists ---
+  const finalLines = processed.split('\n');
+  const output: string[] = [];
   let inUl = false;
   let inOl = false;
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+  for (let i = 0; i < finalLines.length; i++) {
+    const line = finalLines[i];
     const trimmed = line.trim();
 
-    // Skip empty lines
     if (!trimmed) {
-      if (inUl) { result.push('</ul>'); inUl = false; }
-      if (inOl) { result.push('</ol>'); inOl = false; }
+      if (inUl) { output.push('</ul>'); inUl = false; }
+      if (inOl) { output.push('</ol>'); inOl = false; }
       continue;
     }
 
-    // Already processed blocks (headings, blockquote, pre, hr, math)
     if (trimmed.startsWith('<h') || trimmed.startsWith('<blockquote') ||
         trimmed.startsWith('<pre') || trimmed.startsWith('<hr') ||
-        trimmed.startsWith('<span class="math-display"') ||
-        trimmed.startsWith('<span class="math-inline"')) {
-      if (inUl) { result.push('</ul>'); inUl = false; }
-      if (inOl) { result.push('</ol>'); inOl = false; }
-      result.push(line);
+        trimmed.startsWith('<div class="bq-box') || trimmed.startsWith('<div class="footnote') ||
+        trimmed.startsWith('<span class="math') ||
+        trimmed.startsWith('__PROTECTED_')) {
+      if (inUl) { output.push('</ul>'); inUl = false; }
+      if (inOl) { output.push('</ol>'); inOl = false; }
+      output.push(line);
       continue;
     }
 
-    // Unordered list
     if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-      if (inOl) { result.push('</ol>'); inOl = false; }
-      if (!inUl) { result.push('<ul>'); inUl = true; }
-      result.push(`<li>${trimmed.substring(2)}</li>`);
+      if (inOl) { output.push('</ol>'); inOl = false; }
+      if (!inUl) { output.push('<ul>'); inUl = true; }
+      output.push(`<li>${trimmed.substring(2)}</li>`);
       continue;
     }
 
-    // Ordered list
     const olMatch = trimmed.match(/^\d+\.\s+(.*)$/);
     if (olMatch) {
-      if (inUl) { result.push('</ul>'); inUl = false; }
-      if (!inOl) { result.push('<ol>'); inOl = true; }
-      result.push(`<li>${olMatch[1]}</li>`);
+      if (inUl) { output.push('</ul>'); inUl = false; }
+      if (!inOl) { output.push('<ol>'); inOl = true; }
+      output.push(`<li>${olMatch[1]}</li>`);
       continue;
     }
 
-    // Regular paragraph
-    if (inUl) { result.push('</ul>'); inUl = false; }
-    if (inOl) { result.push('</ol>'); inOl = false; }
-    result.push(`<p>${line}</p>`);
+    if (inUl) { output.push('</ul>'); inUl = false; }
+    if (inOl) { output.push('</ol>'); inOl = false; }
+    output.push(`<p>${line}</p>`);
   }
 
-  if (inUl) result.push('</ul>');
-  if (inOl) result.push('</ol>');
+  if (inUl) output.push('</ul>');
+  if (inOl) output.push('</ol>');
 
-  return result.join('\n');
+  processed = output.join('\n');
+
+  // --- Phase 6: Restore protected blocks ---
+  protectedBlocks.forEach(({ placeholder, html }) => {
+    processed = processed.replace(placeholder, html);
+  });
+
+  // Footnotes section
+  if (footnotes.length > 0) {
+    processed += `<hr><div class="footnotes"><h4>Footnotes</h4>` +
+      footnotes.map(f => `<div class="footnote" id="fn-${f.id}"><sup>${f.id}</sup> ${f.text} <a href="#fnref-${f.id}">↩</a></div>`).join('') +
+      `</div>`;
+  }
+
+  return processed;
 }
 
 function escapeHtml(str: string): string {
