@@ -81,6 +81,82 @@ export async function getAllSlugs(): Promise<string[]> {
   }
 }
 
+// Top Posts (by comment count)
+export async function getTopPosts(limit: number = 5): Promise<Post[]> {
+  try {
+    const { data, error } = await supabase
+      .from('posts')
+      .select(`
+        *,
+        categories!posts_category_id_fkey(*),
+        authors!posts_author_id_fkey(*)
+      `)
+      .eq('status', 'published')
+      .order('comment_count', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return data || [];
+  } catch (e) {
+    console.error('getTopPosts error:', e);
+    return [];
+  }
+}
+
+// Archives by month
+export interface ArchiveMonth {
+  year: number;
+  month: number;
+  month_name: string;
+  count: number;
+}
+
+export async function getArchives(): Promise<ArchiveMonth[]> {
+  try {
+    const { data, error } = await supabase
+      .rpc('get_archive_months');
+
+    if (error) {
+      // Fallback if RPC doesn't exist
+      const { data: posts, error: postsError } = await supabase
+        .from('posts')
+        .select('published_at')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false });
+
+      if (postsError) throw postsError;
+
+      const archiveMap = new Map<string, ArchiveMonth>();
+      posts?.forEach((post: any) => {
+        const date = new Date(post.published_at);
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const key = `${year}-${month}`;
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+          'July', 'August', 'September', 'October', 'November', 'December'];
+
+        if (archiveMap.has(key)) {
+          archiveMap.get(key)!.count++;
+        } else {
+          archiveMap.set(key, {
+            year,
+            month,
+            month_name: monthNames[month - 1],
+            count: 1,
+          });
+        }
+      });
+
+      return Array.from(archiveMap.values());
+    }
+
+    return data || [];
+  } catch (e) {
+    console.error('getArchives error:', e);
+    return [];
+  }
+}
+
 // Categories
 export async function getCategories(): Promise<Category[]> {
   try {
