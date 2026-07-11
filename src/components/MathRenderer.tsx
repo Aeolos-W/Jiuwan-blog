@@ -70,6 +70,20 @@ function processContent(content: string): string {
     equationNumbers.push(parseInt(m[2], 10));
   }
 
+  // --- Phase 0b: Collect box references ---
+  const boxRefs: { name: string; num: string; id: string }[] = [];
+  const boxLines = content.split('\n');
+  for (const line of boxLines) {
+    const bqMatch = line.match(/^>\s?([\w\u4e00-\u9fa5]+)\s*(\d*)\s*(?:\(([^)]+)\))?\s*:\s*(.*)$/);
+    if (bqMatch) {
+      const name = bqMatch[1];
+      const num = bqMatch[2];
+      const cssClass = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      const id = num ? `box-${cssClass}-${num}` : `box-${cssClass}`;
+      boxRefs.push({ name, num, id });
+    }
+  }
+
   // --- Phase 1: Extract and protect special content ---
   const protectedBlocks: { placeholder: string; html: string }[] = [];
   let blockIndex = 0;
@@ -129,6 +143,7 @@ function processContent(content: string): string {
         const label = specialMatch[3];
         const text = specialMatch[4];
         const cssClass = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        const boxId = num ? `box-${cssClass}-${num}` : `box-${cssClass}`;
         const titleHtml = `<span class="bq-title">${name}${num ? ` ${num}` : ''}${label ? ` (${label})` : ''}</span>`;
         const bodyLines: string[] = [text];
         while (i + 1 < lines.length && lines[i + 1].match(/^&gt;\s?(.*)$/)) {
@@ -137,7 +152,8 @@ function processContent(content: string): string {
           if (contMatch) bodyLines.push(contMatch[1]);
         }
         const body = bodyLines.join('\n');
-        result.push(protect(`<div class="bq-box bq-${cssClass}">${titleHtml}<div class="bq-body">${body}</div></div>`));
+        const bodyHtml = processBoxBody(body);
+        result.push(protect(`<div class="bq-box bq-${cssClass}" id="${boxId}">${titleHtml}<div class="bq-body">${bodyHtml}</div></div>`));
       } else {
         const bodyLines: string[] = [inner];
         while (i + 1 < lines.length && lines[i + 1].match(/^&gt;\s?(.*)$/)) {
@@ -146,7 +162,7 @@ function processContent(content: string): string {
           if (contMatch) bodyLines.push(contMatch[1]);
         }
         const body = bodyLines.join('\n');
-        result.push(protect(`<blockquote>${body}</blockquote>`));
+        result.push(protect(`<blockquote>${processBoxBody(body)}</blockquote>`));
       }
       continue;
     }
@@ -243,7 +259,22 @@ function processContent(content: string): string {
 
   processed = output.join('\n');
 
-  // --- Phase 6: Equation cross-references ---
+  // --- Phase 6a: Box cross-references ---
+  // Turn (Name Num) or (Name) into links to corresponding boxes
+  for (const box of boxRefs) {
+    const nameEscaped = box.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (box.num) {
+      // Match (Name Num) with optional space, e.g. (Theorem 1) or (历史溯源 1)
+      const pattern = new RegExp(`\\(${nameEscaped}\\s*${box.num.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)`, 'g');
+      processed = processed.replace(pattern, `<a href="#${box.id}" class="eq-ref">(${box.name} ${box.num})</a>`);
+    } else {
+      // Match (Name), e.g. (历史溯源)
+      const pattern = new RegExp(`\\(${nameEscaped}\\)`, 'g');
+      processed = processed.replace(pattern, `<a href="#${box.id}" class="eq-ref">(${box.name})</a>`);
+    }
+  }
+
+  // --- Phase 6b: Equation cross-references ---
   // Turn standalone (n) in paragraphs into links to #eq-n
   if (equationNumbers.length > 0) {
     const eqPattern = new RegExp(
@@ -251,7 +282,7 @@ function processContent(content: string): string {
       'g'
     );
     processed = processed.replace(eqPattern, (match, num) => {
-      // Don't replace if it's already inside a link or math
+      // Don't replace if it's already inside a link
       if (match.includes('href=') || match.includes('data-tex=')) return match;
       return `<a href="#eq-${num}" class="eq-ref">(${num})</a>`;
     });
@@ -270,6 +301,26 @@ function processContent(content: string): string {
   }
 
   return processed;
+}
+
+/** Process inline markdown inside box/quote bodies */
+function processBoxBody(body: string): string {
+  const paragraphs = body.split(/\n\n+/);
+  return paragraphs.map(para => {
+    const withBreaks = para.replace(/\n/g, '<br>\n');
+    let html = withBreaks;
+    // Images
+    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;height:auto;">');
+    // Links
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    // Bold
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    // Italic
+    html = html.replace(/(?<!\*)\*(?!\*)([^*]+)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+    // Inline code
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    return `<p>${html}</p>`;
+  }).join('\n');
 }
 
 function escapeHtml(str: string): string {
