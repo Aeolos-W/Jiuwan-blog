@@ -4,8 +4,11 @@ import { getCategories } from '@/lib/supabase';
 export default async function Navigation() {
   const categories = await getCategories();
 
-  // Exclude 'Uncategorized' from nav; keep About at the end
-  const navCategories = categories.filter((cat: any) => cat.slug !== 'uncategorized');
+  // Only show specific categories in nav
+  const allowedSlugs = ['career-advice', 'on-writing', 'books', 'applets'];
+  const navCategories = categories
+    .filter((cat: any) => allowedSlugs.includes(cat.slug))
+    .sort((a: any, b: any) => allowedSlugs.indexOf(a.slug) - allowedSlugs.indexOf(b.slug));
 
   return (
     <nav className="nav-menu mt-3">
