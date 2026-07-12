@@ -131,8 +131,8 @@ h1, h2, h3, h4, h5, h6 {
 .bq-box {
   margin: 1em 0;
   padding: 12px 16px;
-  border: 1px solid #e0e0e0;
-  background: #f9f9f9;
+  border: 1px solid #333;
+  background: #ffffff;
 }
 
 .bq-box .bq-title {
@@ -140,7 +140,6 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: bold;
   font-size: 12.16px;
   margin-bottom: 8px;
-  font-style: italic;
   font-family: "Times New Roman", Times, serif;
 }
 
@@ -155,30 +154,6 @@ h1, h2, h3, h4, h5, h6 {
 
 .bq-box .bq-body p:last-child {
   margin-bottom: 0;
-}
-
-/* Theorem box variant */
-.bq-theorem {
-  background: #f5f5f5;
-  border-left: 3px solid #999;
-}
-
-/* Question box variant */
-.bq-question {
-  background: #f8f8f8;
-  border-left: 3px solid #ccc;
-}
-
-/* Proof box variant */
-.bq-proof {
-  background: #fafafa;
-  border-left: 3px solid #ddd;
-}
-
-/* Definition box variant */
-.bq-definition {
-  background: #f0f7fa;
-  border-left: 3px solid #006a80;
 }
 
 /* Footnotes */

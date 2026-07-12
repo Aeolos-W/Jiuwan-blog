@@ -20,7 +20,7 @@ export async function GET() {
       description: post.excerpt || post.content.substring(0, 300),
       url: `${siteUrl}/post/${post.slug}/`,
       date: post.published_at,
-      author: post.authors?.name || 'Terence Tao',
+      author: post.authors?.name || '九畹',
       categories: post.tags || [],
     });
   });

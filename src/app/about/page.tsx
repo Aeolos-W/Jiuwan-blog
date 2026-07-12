@@ -41,7 +41,7 @@ export default function AboutPage() {
           <li>and various other topics, usually related to mathematics.</li>
         </ul>
         <p>
-          This blog is created and maintained by Terence Tao, a mathematician at UCLA.
+          This blog is created and maintained by 九畹.
         </p>
         <p>
           The design and layout of this blog are inspired by the original{' '}

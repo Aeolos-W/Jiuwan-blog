@@ -43,7 +43,7 @@ export default function PostCard({ post, showFullContent = false }: PostCardProp
           </>
         )}
         <span className="mx-1">| by</span>
-        <span className="text-tao-dark">{post.authors?.name || 'Terence Tao'}</span>
+        <span className="text-tao-dark">{post.authors?.name || '九畹'}</span>
         <span className="mx-1">|</span>
         <Link href={`/post/${post.slug}/#comments`} className="text-tao-teal hover:underline">
           {post.comment_count} comment{post.comment_count !== 1 ? 's' : ''}
