@@ -259,6 +259,34 @@ export async function getTags(): Promise<Tag[]> {
   }
 }
 
+// Posts by archive month
+export async function getPostsByArchive(year: number, month: number): Promise<Post[]> {
+  try {
+    const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+    const endMonth = month === 12 ? 1 : month + 1;
+    const endYear = month === 12 ? year + 1 : year;
+    const endDate = `${endYear}-${String(endMonth).padStart(2, '0')}-01`;
+
+    const { data, error } = await supabase
+      .from('posts')
+      .select(`
+        *,
+        categories!posts_category_id_fkey(*),
+        authors!posts_author_id_fkey(*)
+      `)
+      .eq('status', 'published')
+      .gte('published_at', startDate)
+      .lt('published_at', endDate)
+      .order('published_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (e) {
+    console.error('getPostsByArchive error:', e);
+    return [];
+  }
+}
+
 // RSS Feed
 export async function getAllPostsForRSS(): Promise<Post[]> {
   try {
