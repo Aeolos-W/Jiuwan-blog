@@ -103,6 +103,11 @@ function processContent(content: string): string {
     return protect(`<span class="math-display" data-tex="${escapeAttr(tex)}"></span>`);
   });
 
+  // Extract wavy underline: ~~~text~~~
+  processed = processed.replace(/~{3}([^~]+)~{3}/g, (match, text) => {
+    return protect(`<span class="wavy-underline">${text}</span>`);
+  });
+
   // Extract inline math \( ... \)
   processed = processed.replace(/\\\(([\s\S]*?)\\\)/g, (match, tex) => {
     return protect(`<span class="math-inline" data-tex="${escapeAttr(tex)}"></span>`);
