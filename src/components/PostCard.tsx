@@ -13,7 +13,7 @@ export default function PostCard({ post, showFullContent = false }: PostCardProp
     <article className="mb-8">
       {/* 文章标题 */}
       <h2 className="font-heading text-h2 mb-1">
-        <Link href={`/post/${post.slug}/`} className="text-tao-dark hover:text-tao-teal">
+        <Link href={`/post/${encodeURIComponent(post.slug)}/`} className="text-tao-dark hover:text-tao-teal">
           <MathRenderer content={post.title} inline />
         </Link>
       </h2>
@@ -45,7 +45,7 @@ export default function PostCard({ post, showFullContent = false }: PostCardProp
         <span className="mx-1">| by</span>
         <span className="text-tao-dark">{post.authors?.name || '九畹'}</span>
         <span className="mx-1">|</span>
-        <Link href={`/post/${post.slug}/#comments`} className="text-tao-teal hover:underline">
+        <Link href={`/post/${encodeURIComponent(post.slug)}/#comments`} className="text-tao-teal hover:underline">
           {post.comment_count} comment{post.comment_count !== 1 ? 's' : ''}
         </Link>
       </div>
@@ -58,7 +58,7 @@ export default function PostCard({ post, showFullContent = false }: PostCardProp
           <>
             <MathRenderer content={post.excerpt || post.content.substring(0, 300) + '...'} />
             <p className="mt-2">
-              <Link href={`/post/${post.slug}/`} className="text-tao-teal hover:underline">
+              <Link href={`/post/${encodeURIComponent(post.slug)}/`} className="text-tao-teal hover:underline">
                 Read more &rarr;
               </Link>
             </p>

@@ -18,7 +18,7 @@ export async function GET() {
     feed.item({
       title: post.title,
       description: post.excerpt || post.content.substring(0, 300),
-      url: `${siteUrl}/post/${post.slug}/`,
+      url: `${siteUrl}/post/${encodeURIComponent(post.slug)}/`,
       date: post.published_at,
       author: post.authors?.name || '九畹',
       categories: post.tags || [],

@@ -27,7 +27,7 @@ export default async function Sidebar() {
                 <span className="text-tao-dark">{comment.author_name}</span>
                 <span className="text-tao-gray"> on </span>
                 <Link
-                  href={`/post/${comment.posts?.slug}/`}
+                  href={`/post/${encodeURIComponent(comment.posts?.slug || '')}/`}
                   className="text-tao-teal hover:underline"
                 >
                   {comment.posts?.title}
@@ -48,7 +48,7 @@ export default async function Sidebar() {
           {topPosts.map((post: any) => (
             <li key={post.id}>
               <Link
-                href={`/post/${post.slug}/`}
+                href={`/post/${encodeURIComponent(post.slug)}/`}
                 className="text-tao-teal hover:underline"
                 style={{ fontSize: '11px', lineHeight: '1.4', display: 'block' }}
               >
