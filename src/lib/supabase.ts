@@ -297,6 +297,28 @@ export async function getPostsByArchive(year: number, month: number): Promise<Po
   }
 }
 
+// Search posts
+export async function searchPosts(query: string): Promise<Post[]> {
+  try {
+    const { data, error } = await supabase
+      .from('posts')
+      .select(`
+        *,
+        categories!posts_category_id_fkey(*),
+        authors!posts_author_id_fkey(*)
+      `)
+      .eq('status', 'published')
+      .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
+      .order('published_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (e) {
+    console.error('searchPosts error:', e);
+    return [];
+  }
+}
+
 // RSS Feed
 export async function getAllPostsForRSS(): Promise<Post[]> {
   try {

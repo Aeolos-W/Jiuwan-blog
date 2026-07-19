@@ -12,6 +12,26 @@ export default async function Sidebar() {
 
   return (
     <div className="space-y-6">
+      {/* Search Widget */}
+      <div>
+        <form action="/search" method="get" className="flex gap-1">
+          <input
+            type="text"
+            name="q"
+            placeholder="Search..."
+            className="flex-1 px-2 py-1 border border-gray-300 text-tao-dark"
+            style={{ fontSize: '12px', lineHeight: '1.4' }}
+          />
+          <button
+            type="submit"
+            className="px-2 py-1 border border-gray-400 bg-gray-100 text-tao-dark hover:bg-gray-200"
+            style={{ fontSize: '12px', lineHeight: '1.4' }}
+          >
+            Search
+          </button>
+        </form>
+      </div>
+
       {/* Recent Comments Widget */}
       <div>
         <h3 className="widget-title">Recent Comments</h3>
