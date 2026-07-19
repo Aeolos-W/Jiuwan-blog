@@ -4,7 +4,17 @@ import { Post, Category, Comment, Author, Tag } from '@/types';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: { persistSession: false },
+  global: {
+    fetch: (input: RequestInfo | URL, init?: RequestInit) => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 25000);
+      return fetch(input, { ...init, signal: controller.signal })
+        .finally(() => clearTimeout(timeout));
+    },
+  },
+});
 
 // Posts
 export async function getPosts(

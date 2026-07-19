@@ -22,6 +22,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 }
 
 export const revalidate = 60;
+export const maxDuration = 60;
 
 export default async function PostPage({ params }: PostPageProps) {
   const post = await getPostBySlug(params.slug);

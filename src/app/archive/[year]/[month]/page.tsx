@@ -19,6 +19,7 @@ export async function generateMetadata({ params }: ArchivePageProps): Promise<Me
 }
 
 export const revalidate = 60;
+export const maxDuration = 60;
 
 export default async function ArchivePage({ params }: ArchivePageProps) {
   const year = parseInt(params.year, 10);
